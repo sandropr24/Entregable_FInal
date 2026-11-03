@@ -1,0 +1,147 @@
+
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title><%= titulo %></title>
+    <link rel="stylesheet" href="/css/styles.css">
+    <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
+    <script src="/js/app.js?v=3" defer></script>
+</head>
+<body>
+    <div class="app-container">
+        <header class="app-header">
+            <div>
+                <span class="eyebrow">Sistema de gestión documental</span>
+                <h1>Gestión de Comprobantes</h1>
+                <p>Registro y almacenamiento mediante servicios AWS simulados con Floci.</p>
+            </div>
+            <span class="status-badge">AWS Local</span>
+        </header>
+
+        <main>
+            <section class="card">
+                <div class="section-heading">
+                    <div>
+                        <h2>Registrar comprobante</h2>
+                        <p>Completa los datos y adjunta una imagen del comprobante.</p>
+                    </div>
+                </div>
+
+                <form id="formComprobante" enctype="multipart/form-data">
+                    <div class="form-grid">
+                        <div class="form-group">
+                            <label for="tipoComprobante">Tipo de comprobante *</label>
+                            <select id="tipoComprobante" name="tipoComprobante" required>
+                                <option value="">Seleccionar tipo</option>
+                                <option value="Boleta">Boleta</option>
+                                <option value="Factura">Factura</option>
+                            </select>
+                        </div>
+
+                        <div class="form-group">
+                            <label for="fechaEmision">Fecha de emisión *</label>
+                            <input type="date" id="fechaEmision" name="fechaEmision" required>
+                        </div>
+
+                        <div class="form-group">
+                            <label for="usuario">Nombre del usuario *</label>
+                            <input type="text" id="usuario" name="usuario" maxlength="120" placeholder="Nombre completo" required>
+                        </div>
+
+                        <div class="form-group">
+                            <label for="tienda">Tienda *</label>
+                            <select id="tienda" name="tienda" required>
+                                <option value="">Seleccionar tienda</option>
+                                <option value="Chincha">Chincha</option>
+                                <option value="Pisco">Pisco</option>
+                                <option value="Ica">Ica</option>
+                            </select>
+                        </div>
+
+                        <div class="form-group full-width">
+                            <label for="observacion">Observación (opcional)</label>
+                            <textarea id="observacion" name="observacion" rows="3" maxlength="500" placeholder="Escribe una observación..."></textarea>
+                        </div>
+
+                        <div class="form-group full-width">
+                            <label for="imagen">Imagen del comprobante *</label>
+                            <div class="upload-area">
+                                <input type="file" id="imagen" name="imagen" accept=".jpg,.jpeg,.png,image/jpeg,image/png" required>
+                                <p>Selecciona una imagen JPG o PNG (máximo 5 MB).</p>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="form-actions">
+                        <button type="reset" class="btn btn-secondary">Limpiar</button>
+                        <button type="submit" id="btnGuardar" class="btn btn-primary">Registrar comprobante</button>
+                    </div>
+                </form>
+            </section>
+
+            <section class="card">
+                <div class="section-heading">
+                    <div>
+                        <h2>Comprobantes registrados</h2>
+                        <p>Consulta las imágenes y los resultados JSON de Textract.</p>
+                    </div>
+                    <span class="count-badge"><%= comprobantes.length %> registros</span>
+                </div>
+
+                <div class="table-responsive">
+                    <table>
+                        <thead>
+                            <tr>
+                                <th>Tipo</th>
+                                <th>Fecha</th>
+                                <th>Usuario</th>
+                                <th>Tienda</th>
+                                <th>Observación</th>
+                                <th>Acciones</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            <% if (comprobantes.length === 0) { %>
+                                <tr>
+                                    <td colspan="6" class="empty-state">Todavía no hay comprobantes registrados.</td>
+                                </tr>
+                            <% } else { %>
+                                <% comprobantes.forEach(comprobante => { %>
+                                    <tr>
+                                        <td><span class="type-badge"><%= comprobante.tipoComprobante %></span></td>
+                                        <td><%= comprobante.fechaEmision %></td>
+                                        <td><%= comprobante.usuario %></td>
+                                        <td><%= comprobante.tienda %></td>
+                                        <td><%= comprobante.observacion || '—' %></td>
+                                        <td>
+                                            <div class="table-actions">
+                                                <button type="button" class="btn btn-small btn-outline" data-action="imagen" data-id="<%= comprobante.id %>">Imagen</button>
+                                                <button type="button" class="btn btn-small btn-outline" data-action="json" data-id="<%= comprobante.id %>">JSON</button>
+                                                <button type="button" class="btn btn-small btn-danger" data-action="eliminar" data-id="<%= comprobante.id %>">Eliminar</button>
+                                            </div>
+                                        </td>
+                                    </tr>
+                                <% }) %>
+                            <% } %>
+                        </tbody>
+                    </table>
+                </div>
+            </section>
+        </main>
+
+        <footer class="app-footer">Express · Amazon Textract · Amazon S3 · Amazon DynamoDB · Floci</footer>
+    </div>
+
+    <div id="modal" class="modal" aria-hidden="true">
+        <div class="modal-content" role="dialog" aria-modal="true" aria-labelledby="modalTitulo">
+            <div class="modal-header">
+                <h2 id="modalTitulo">Vista previa</h2>
+                <button type="button" id="cerrarModal" class="modal-close" aria-label="Cerrar">×</button>
+            </div>
+            <div id="modalBody" class="modal-body"></div>
+        </div>
+    </div>
+</body>
+</html>
